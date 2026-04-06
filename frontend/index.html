@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GovMatch - 联邦合同搜索</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GovMatch</h1>
+            <p class="subtitle">联邦合同数据搜索与胜率预测</p>
+        </header>
+
+        <section class="search-bar">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="输入企业名称，如 SAFEWARE..."
+                autocomplete="off"
+                spellcheck="false"
+            />
+            <button id="searchBtn">搜索</button>
+        </section>
+
+        <div id="predictCard" class="predict-card hidden">
+            <div class="predict-header">
+                <span class="company-name" id="predictCompanyName"></span>
+                <div class="win-rate" id="predictWinRate"></div>
+            </div>
+            <div class="predict-stats" id="predictStats"></div>
+        </div>
+
+        <div id="errorMsg" class="error-msg hidden"></div>
+
+        <div id="resultsSection" class="results-section hidden">
+            <div class="results-meta">
+                <span id="resultsCount"></span>
+            </div>
+            <div class="table-wrapper">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>合同 ID</th>
+                            <th>企业名称</th>
+                            <th>金额 ($)</th>
+                            <th>开始日期</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <span>加载中...</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
