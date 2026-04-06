@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Query, HTTPException
 from typing import Optional, List
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from psycopg2 import Error as PgError
 import logging
 import os
-import re
+from urllib.parse import urlparse, unquote
 from datetime import date, datetime, timedelta
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -20,19 +21,47 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # --- 数据库配置（从环境变量读取）---
-def _build_db_config() -> dict:
+def _build_db_config() -> Optional[dict]:
     db_password = os.getenv("DB_PASSWORD")
     if not db_password:
         db_url = os.getenv("DATABASE_URL")
         if not db_url:
-            raise ValueError("必须设置 DB_PASSWORD 或 DATABASE_URL 环境变量")
-        m = re.match(
-            r"(?:postgres|postgresql)://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<dbname>.+)",
-            db_url,
-        )
-        if not m:
-            raise ValueError("DATABASE_URL 格式不正确，应为 postgresql://user:password@host:port/dbname")
-        return m.groupdict()
+            logger.error("缺少数据库配置：既未设置 DB_PASSWORD，也未设置 DATABASE_URL 环境变量")
+            return None
+        try:
+            parsed = urlparse(db_url)
+            scheme = parsed.scheme.lower()
+            if scheme not in ("postgresql", "postgres"):
+                logger.error(
+                    "DATABASE_URL 协议不支持（仅支持 postgresql:// 和 postgres://）：%s",
+                    scheme,
+                )
+                return None
+            user = unquote(parsed.username or "")
+            password = unquote(parsed.password or "")
+            host = parsed.hostname or ""
+            port = parsed.port or 5432
+            dbname = parsed.path.lstrip("/") if parsed.path else ""
+            if not all([user, password, host, dbname]):
+                logger.error(
+                    "DATABASE_URL 格式不完整，解析结果缺失必要字段 "
+                    "（user=%s, password=%s, host=%s, dbname=%s）",
+                    user, "***" if password else "", host, dbname,
+                )
+                return None
+            result = {
+                "user": user,
+                "password": password,
+                "host": host,
+                "port": port,
+                "dbname": dbname,
+            }
+            logger.info("DATABASE_URL 解析成功：%s@%s:%s/%s",
+                        user, host, port, dbname)
+            return result
+        except Exception as e:
+            logger.error("DATABASE_URL 解析异常：%s | URL=%.80s...", e, db_url)
+            return None
     return {
         "dbname": os.getenv("DB_NAME", "govmatch"),
         "user": os.getenv("DB_USER", "api_user"),
@@ -42,7 +71,23 @@ def _build_db_config() -> dict:
     }
 
 
-DB_CONFIG = _build_db_config()
+def _get_db_config_fallback() -> dict:
+    return {
+        "dbname": os.getenv("DB_NAME", "govmatch"),
+        "user": os.getenv("DB_USER", "api_user"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", 5432)),
+    }
+
+
+_db_config_parsed = _build_db_config()
+if _db_config_parsed is not None:
+    DB_CONFIG = _db_config_parsed
+    logger.info("数据库配置加载成功（来自 DATABASE_URL）")
+else:
+    DB_CONFIG = _get_db_config_fallback()
+    logger.warning("DATABASE_URL 解析失败，已回退到从环境变量逐项读取")
 
 app = FastAPI(title="GovMatch API", description="Federal Contract Search API", version="1.0")
 
