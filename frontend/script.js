@@ -106,12 +106,12 @@ function renderPredict(data) {
             : "var(--text-muted)";
 
     predictStats.innerHTML = [
-        { label: "合同总数", value: data.total_contracts },
-        { label: "累计金额", value: "$" + formatAmount(data.total_amount) },
-        { label: "平均金额", value: "$" + formatAmount(data.avg_amount) },
-        { label: "近期活跃", value: data.recent_activity ? "是" : "否" },
-        { label: "胜率得分", value: data.win_rate_score },
-        { label: "置信度", value: data.confidence, color: confidenceColor },
+        { label: "Total Contracts", value: data.total_contracts },
+        { label: "Total Amount", value: "$" + formatAmount(data.total_amount) },
+        { label: "Avg Amount", value: "$" + formatAmount(data.avg_amount) },
+        { label: "Recent Activity", value: data.recent_activity ? "Yes" : "No" },
+        { label: "Win Rate Score", value: data.win_rate_score },
+        { label: "Confidence", value: data.confidence, color: confidenceColor },
     ]
         .map(
             (s) => `
@@ -128,7 +128,7 @@ function renderPredict(data) {
 function renderTable(rows) {
     if (!rows || rows.length === 0) {
         resultsBody.innerHTML =
-            '<tr><td colspan="4" class="empty-cell">未找到相关合同</td></tr>';
+            '<tr><td colspan="4" class="empty-cell">No contracts found</td></tr>';
         return;
     }
 
@@ -212,7 +212,7 @@ function getVisiblePages(cur, total) {
 async function fetchPredict(recipientName) {
     const url = `${API_BASE_URL}/recipient/predict/${encodeURIComponent(recipientName)}`;
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`预测接口响应失败 (${resp.status})`);
+    if (!resp.ok) throw new Error(`Prediction API error (${resp.status})`);
     return await resp.json();
 }
 
@@ -224,7 +224,7 @@ async function fetchContracts(recipientName, page) {
     });
     const url = `${API_BASE_URL}/contracts/search?${params}`;
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`搜索接口响应失败 (${resp.status})`);
+    if (!resp.ok) throw new Error(`Search API error (${resp.status})`);
     return await resp.json();
 }
 
@@ -232,7 +232,7 @@ async function fetchContracts(recipientName, page) {
 
 async function doSearch(query, page = 1) {
     if (!query.trim()) {
-        showError("请输入企业名称后再搜索");
+        showError("Please enter a company name to search");
         return;
     }
 
@@ -261,13 +261,13 @@ async function doSearch(query, page = 1) {
         const from = (currentPage - 1) * PER_PAGE + 1;
         const to = Math.min(currentPage * PER_PAGE, currentTotal);
         resultsCount.textContent = currentTotal === 0
-            ? "未找到相关合同"
-            : `显示 ${from}–${to}，共 ${currentTotal} 条`;
+            ? "No contracts found"
+            : `Showing ${from}–${to} of ${currentTotal} result${currentTotal === 1 ? "" : "s"}`;
 
         resultsSection.classList.remove("hidden");
     } catch (err) {
         console.error(err);
-        showError("请求失败，请检查 API 服务是否运行");
+        showError("Request failed — please check that the API service is running");
     } finally {
         setLoading(false);
     }

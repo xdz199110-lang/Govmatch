@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GovMatch - 联邦合同搜索</title>
+    <title>GovMatch - Federal Contract Search</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
     <div class="container">
         <header>
             <h1>GovMatch</h1>
-            <p class="subtitle">联邦合同数据搜索与胜率预测</p>
+            <p class="subtitle">Federal Contract Search &amp; Win Rate Prediction</p>
         </header>
 
         <section class="search-bar">
             <input
                 type="text"
                 id="searchInput"
-                placeholder="输入企业名称，如 SAFEWARE..."
+                placeholder="Enter company name, e.g. SAFEWARE..."
                 autocomplete="off"
                 spellcheck="false"
             />
-            <button id="searchBtn">搜索</button>
+            <button id="searchBtn">Search</button>
         </section>
 
         <div id="predictCard" class="predict-card hidden">
@@ -42,10 +42,10 @@
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th>合同 ID</th>
-                            <th>企业名称</th>
-                            <th>金额 ($)</th>
-                            <th>开始日期</th>
+                            <th>Award ID</th>
+                            <th>Recipient Name</th>
+                            <th>Amount ($)</th>
+                            <th>Start Date</th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody"></tbody>
@@ -56,7 +56,7 @@
 
         <div id="loadingOverlay" class="loading-overlay hidden">
             <div class="spinner"></div>
-            <span>加载中...</span>
+            <span>Loading...</span>
         </div>
     </div>
 

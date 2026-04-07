@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -90,6 +91,19 @@ else:
     logger.warning("DATABASE_URL 解析失败，已回退到从环境变量逐项读取")
 
 app = FastAPI(title="GovMatch API", description="Federal Contract Search API", version="1.0")
+
+# ── CORS 中间件（插入位置）──────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://govmatch-frontend.onrender.com",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ── CORS 结束 ──────────────────────────
 
 logger.info("GovMatch API 启动，数据库: %s:%s/%s",
             DB_CONFIG["host"], DB_CONFIG["port"], DB_CONFIG["dbname"])
